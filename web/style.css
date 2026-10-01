@@ -53,14 +53,15 @@ button, select, a { font: inherit; }
   z-index: 5;
 }
 
-.brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.brand { display: flex; align-items: center; gap: 11px; min-width: 0; flex: 0 1 auto; }
 .brand-mark { width: 30px; height: 30px; fill: var(--gold); flex: 0 0 auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,.4)); }
 .brand-text { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
-.brand-title { font-weight: 600; letter-spacing: .2px; }
-.brand-sub { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--dim); }
+.brand-title { font-weight: 600; letter-spacing: .2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand-sub { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--dim); white-space: nowrap; }
 
 .mode-toggle {
   display: inline-flex;
+  flex: 0 0 auto;
   padding: 3px;
   gap: 3px;
   background: rgba(0, 0, 0, 0.22);
@@ -80,6 +81,7 @@ button, select, a { font: inherit; }
 .mode-btn.is-active { background: var(--gold); color: #243a30; font-weight: 600; }
 
 .ghost-btn {
+  flex: 0 0 auto;
   margin-left: auto;
   display: inline-flex;
   align-items: center;
@@ -222,4 +224,15 @@ button, select, a { font: inherit; }
   .stage.compare { grid-template-columns: 1fr; grid-auto-rows: 1fr; overflow-y: auto; }
   .stage.compare .panel { min-height: 60vh; }
   .brand-sub { display: none; }
+}
+
+/* ---- Responsive: tighten the top bar on phones ---- */
+@media (max-width: 560px) {
+  :root { --bar-h: 52px; --gap: 9px; }
+  .topbar { gap: 10px; padding: 0 12px; }
+  .brand { gap: 9px; }
+  .brand-mark { width: 26px; height: 26px; }
+  .mode-btn { padding: 7px 12px; }
+  .ghost-btn { padding: 9px; }        /* square icon button */
+  .ghost-btn .btn-label { display: none; }
 }
