@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1a2a24">
+<title>Treetop Benchmark Viewer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231a2a24'/%3E%3Cpath d='M32 8 12 36h13L17 47h11v10h8V47h11l-8-11h13Z' fill='%23e4bc78'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M32 8 12 36h13L17 47h11v10h8V47h11l-8-11h13Z"/>
+    </svg>
+    <div class="brand-text">
+      <span class="brand-title">Treetop Benchmark</span>
+      <span class="brand-sub">model comparison viewer</span>
+    </div>
+  </div>
+
+  <div class="mode-toggle" role="tablist" aria-label="View mode">
+    <button id="mode-single" class="mode-btn is-active" role="tab" aria-selected="true">Single</button>
+    <button id="mode-compare" class="mode-btn" role="tab" aria-selected="false">Compare</button>
+  </div>
+
+  <button id="show-prompt" class="ghost-btn" aria-haspopup="dialog">
+    <svg viewBox="0 0 24 24" aria-hidden="true" class="icon"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm8 1.5V9h4.5M8 13h8M8 17h8M8 9h3"/></svg>
+    Prompt
+  </button>
+</header>
+
+<main id="stage" class="stage single"></main>
+
+<!-- Panel template, cloned per viewport -->
+<template id="panel-template">
+  <section class="panel">
+    <div class="panel-bar">
+      <select class="panel-select" aria-label="Choose model"></select>
+      <div class="panel-actions">
+        <button class="icon-btn js-reload" title="Reload scene" aria-label="Reload scene">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="icon"><path d="M20 11a8 8 0 1 0-.9 4M20 5v6h-6"/></svg>
+        </button>
+        <a class="icon-btn js-open" target="_blank" rel="noopener" title="Open in new tab" aria-label="Open in new tab">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="icon"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="panel-view">
+      <iframe class="panel-frame" title="Model render" allow="fullscreen" referrerpolicy="no-referrer"></iframe>
+      <div class="panel-empty" hidden>Pick a model to view it here.</div>
+    </div>
+  </section>
+</template>
+
+<!-- Prompt slide-over -->
+<div id="prompt-overlay" class="overlay" hidden>
+  <div class="overlay-scrim" data-close></div>
+  <aside class="prompt-panel" role="dialog" aria-label="Benchmark prompt" aria-modal="true">
+    <div class="prompt-head">
+      <span>Benchmark prompt</span>
+      <button class="icon-btn" data-close title="Close" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="icon"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <pre id="prompt-body" class="prompt-body">Loading…</pre>
+  </aside>
+</div>
+
+<div id="empty-state" class="empty-state" hidden>
+  <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8 12 36h13L17 47h11v10h8V47h11l-8-11h13Z"/></svg>
+  <h2>No models yet</h2>
+  <p>Drop a self-contained <code>.html</code> file into the <code>models/</code> folder, then refresh.</p>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

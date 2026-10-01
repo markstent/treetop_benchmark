@@ -1,0 +1,50 @@
+Build an interactive, highly detailed 3D treetop village as a single self-contained HTML file.
+
+## Technical constraints
+- One HTML file only. All HTML, CSS, and JavaScript inline.
+- Use three.js version 0.170.0 loaded via an import map from https://cdn.jsdelivr.net/npm/three@0.170.0/ (including addons such as OrbitControls from the same version). No other external libraries.
+- No external assets: every model, texture, and material must be generated procedurally in code (geometry, canvas-generated textures, or shaders).
+- It must run by opening the file directly in a current desktop Chrome browser with zero console errors.
+- Target a steady 60fps on a typical modern laptop with default settings. Use instancing, merged geometry, or level of detail where appropriate.
+
+## The scene
+A village built high in a forest of giant trees, connected by rope bridges.
+- At least 7 giant trees with realistic-looking trunks (bark texture, roots spreading over the forest floor, branching limbs) and dense layered canopies.
+- At least 12 dwellings built on platforms around and between the trunks: wooden plank walls, shingled or thatched roofs, windows, doors, railings, chimneys or stovepipes with rising smoke. Dwellings should vary in size, shape, and height.
+- Rope bridges connecting platforms, with individual planks, rope railings, and a visible sag. Bridges should sway gently.
+- Spiral staircases or ladders running down some trunks to the forest floor.
+- Additional structures: a central communal platform with a larger hall, a lookout tower at the top of the tallest tree, and a rope-and-pulley lift.
+- Forest floor: ferns, moss, fallen logs, mushrooms, rocks, a small stream with moving water.
+- Props that reward close inspection: lanterns, hanging laundry, flower boxes, barrels, crates, birdhouses, wind chimes.
+- Life: small animated villagers (original simple stylized figures) walking along bridges and platforms on believable paths, birds flying between trees, falling leaves or drifting particles.
+
+## Level of detail
+The scene must hold up at every zoom level:
+- From far away: a readable silhouette of the whole village in its forest.
+- Mid range: individual buildings, bridges, and villagers are clearly distinct.
+- Up close (camera right next to a doorway or bridge): planks, ropes, window frames, and props are individually modeled, not just textured flat surfaces.
+
+## Camera and controls
+- Orbit mode (default): orbit, pan, and zoom with mouse and trackpad, smoothly damped, with sensible limits (cannot go below the ground).
+- First-person walk mode: WASD plus mouse look, with the ability to walk along platforms and bridges at their height.
+- A key or button to toggle between modes, and a "reset view" button.
+- An on-screen help overlay listing controls, which can be dismissed.
+
+## Parameter panel
+A clean, collapsible control panel (build it yourself, no UI libraries) with live updates:
+- Time of day (slider, 0 to 24h): sun position, sky color, light color, and shadows change accordingly. At night, lanterns and windows glow and emit light.
+- Season (spring, summer, autumn, winter): canopy color and density, ground cover, and particles change (for example falling leaves in autumn, snow in winter).
+- Fog density.
+- Wind strength: affects canopy sway, bridge sway, and smoke direction.
+- Number of dwellings.
+- Number of villagers.
+- Random seed with a "regenerate" button that produces a different but equally coherent village layout.
+- Shadow quality (off, low, high).
+- A small FPS counter.
+
+## Quality bar
+- Art direction should be cohesive, warm, and storybook-like, not a collection of default primitives with flat colors.
+- Lighting should be considered: soft shadows, ambient occlusion feel, atmospheric depth.
+- The code should be well organized into clear sections or functions, with brief comments.
+
+Output only the complete HTML file.

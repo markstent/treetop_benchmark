@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Playwright test artifacts
+.playwright-mcp/
