@@ -5,8 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#1a2a24">
 <title>Treetop Benchmark Viewer</title>
+<meta name="description" content="Browse and compare the 3D treetop villages that AI models build from one demanding brief, side by side in the browser.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Treetop Benchmark Viewer">
+<meta property="og:description" content="Browse and compare the 3D treetop villages that AI models build from one demanding brief, side by side in the browser.">
+<meta property="og:image" content="https://markstent.github.io/treetop_benchmark/assets/hero-single.png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231a2a24'/%3E%3Cpath d='M32 8 12 36h13L17 47h11v10h8V47h11l-8-11h13Z' fill='%23e4bc78'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="topbar">
@@ -25,10 +31,16 @@
     <button id="mode-compare" class="mode-btn" role="tab" aria-selected="false">Compare</button>
   </div>
 
-  <button id="show-prompt" class="ghost-btn" aria-haspopup="dialog" aria-label="Show benchmark prompt">
-    <svg viewBox="0 0 24 24" aria-hidden="true" class="icon"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm8 1.5V9h4.5M8 13h8M8 17h8M8 9h3"/></svg>
-    <span class="btn-label">Prompt</span>
-  </button>
+  <div class="topbar-actions">
+    <button id="show-about" class="ghost-btn" aria-haspopup="dialog" aria-label="About this benchmark">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="icon"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
+      <span class="btn-label">About</span>
+    </button>
+    <button id="show-prompt" class="ghost-btn" aria-haspopup="dialog" aria-label="Show benchmark prompt">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="icon"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm8 1.5V9h4.5M8 13h8M8 17h8M8 9h3"/></svg>
+      <span class="btn-label">Prompt</span>
+    </button>
+  </div>
 </header>
 
 <main id="stage" class="stage single"></main>
@@ -39,6 +51,9 @@
     <div class="panel-bar">
       <select class="panel-select" aria-label="Choose model"></select>
       <div class="panel-actions">
+        <button class="icon-btn js-info" title="About this run" aria-label="About this run" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="icon"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
+        </button>
         <button class="icon-btn js-reload" title="Reload scene" aria-label="Reload scene">
           <svg viewBox="0 0 24 24" aria-hidden="true" class="icon"><path d="M20 11a8 8 0 1 0-.9 4M20 5v6h-6"/></svg>
         </button>
@@ -47,8 +62,12 @@
         </a>
       </div>
     </div>
+    <div class="panel-info" hidden>
+      <dl class="info-grid"></dl>
+      <p class="info-note"></p>
+    </div>
     <div class="panel-view">
-      <iframe class="panel-frame" title="Model render" allow="fullscreen" referrerpolicy="no-referrer"></iframe>
+      <iframe class="panel-frame" title="Model render" sandbox="allow-scripts allow-pointer-lock allow-forms" allow="fullscreen" referrerpolicy="no-referrer"></iframe>
       <div class="panel-empty" hidden>Pick a model to view it here.</div>
     </div>
   </section>
@@ -68,12 +87,26 @@
   </aside>
 </div>
 
+<!-- About slide-over: renders docs/BENCHMARK.md -->
+<div id="about-overlay" class="overlay" hidden>
+  <div class="overlay-scrim" data-close></div>
+  <aside class="prompt-panel prompt-panel--wide" role="dialog" aria-label="About this benchmark" aria-modal="true">
+    <div class="prompt-head">
+      <span>About this benchmark</span>
+      <button class="icon-btn" data-close title="Close" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="icon"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div id="about-body" class="doc-body"><p class="doc-muted">Loading…</p></div>
+  </aside>
+</div>
+
 <div id="empty-state" class="empty-state" hidden>
   <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8 12 36h13L17 47h11v10h8V47h11l-8-11h13Z"/></svg>
   <h2>No models yet</h2>
-  <p>Drop a self-contained <code>.html</code> file into the <code>models/</code> folder, then refresh.</p>
+  <p>No entries were found in <code>models.json</code>.</p>
 </div>
 
-<script src="/app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

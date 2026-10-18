@@ -1,0 +1,40 @@
+{
+  "models": [
+    {
+      "file": "Treetop_village_Claude_Sonnet_5.5_Max.html",
+      "label": "Claude Sonnet 5.5 Max",
+      "model": "claude-sonnet-5-5",
+      "provider": "Claude Code subagent (Anthropic subscription)",
+      "effort": "max",
+      "date": "2026-10-18",
+      "note": "As generated, no edits. Zero console errors on first load."
+    },
+    {
+      "file": "Treetop_village_Claude_Opus_5.5_Max.html",
+      "label": "Claude Opus 5.5 Max",
+      "model": "claude-opus-5-5",
+      "provider": "Claude Code subagent (Anthropic subscription)",
+      "effort": "max",
+      "date": "2026-10-18",
+      "note": "Patched after generation: four calls to a Vector3 method on a three.js Color were replaced with equivalent Color arithmetic. As generated, the scene crashed during construction and never appeared."
+    },
+    {
+      "file": "Treetop_village_Claude_Fable_5.1_Max.html",
+      "label": "Claude Fable 5.1 Max",
+      "model": "claude-fable-5-1",
+      "provider": "Claude Code subagent (Anthropic subscription)",
+      "effort": "max",
+      "date": "2026-10-18",
+      "note": "Patched after generation: nine GLSL #include directives were moved onto their own lines. As generated, the water and particle shaders failed to compile. Fable 5.5 does not exist; 5.1 is the newest Fable."
+    },
+    {
+      "file": "Treetop_village_GPT6_Astra_High.html",
+      "label": "GPT6 Astra High",
+      "model": "gpt-6-astra",
+      "provider": "unrecorded",
+      "effort": "high",
+      "date": "2026-10-01",
+      "note": "Legacy baseline added before any tooling existed. Exact settings and interface were not recorded; the High suffix is taken to mean reasoning effort high."
+    }
+  ]
+}

@@ -7,3 +7,7 @@ __pycache__/
 
 # Playwright test artifacts
 .playwright-mcp/
+
+# Generator
+.env
+runs/

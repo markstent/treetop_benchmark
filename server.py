@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Treetop Benchmark Viewer - a tiny zero-dependency local server.
+"""Local static server for the Treetop Benchmark Viewer.
 
-Serves the viewer frontend (web/), the raw model HTML files (models/), and a
-live listing of the models folder at /api/models. Standard library only.
+The site is plain static files served from the repository root, exactly as
+GitHub Pages serves them. This script exists only so you can preview it
+locally without installing anything. Standard library only.
 
-Usage:
-    python3 server.py [port]
-
-Then open the printed URL in Chrome.
+    python3 server.py          # http://localhost:8777/
+    python3 server.py 9000     # another port
 """
 
-import json
-import re
+from __future__ import annotations
+
+import mimetypes
 import sys
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -19,135 +19,69 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 ROOT = Path(__file__).resolve().parent
-WEB_DIR = ROOT / "web"
-MODELS_DIR = ROOT / "models"
-PROMPT_FILE = ROOT / "prompt.txt"
 DEFAULT_PORT = 8777
 
-# Frontend files we are willing to serve from web/, mapped to their media type.
-STATIC_FILES = {
-    "/": ("index.html", "text/html; charset=utf-8"),
-    "/index.html": ("index.html", "text/html; charset=utf-8"),
-    "/style.css": ("style.css", "text/css; charset=utf-8"),
-    "/app.js": ("app.js", "text/javascript; charset=utf-8"),
-}
+# What the site is allowed to serve: the viewer, its data, and the model files.
+# Everything else in the repo (scripts, tests, runs/, .env) stays private.
+ROOT_FILES = {"index.html", "style.css", "app.js", "models.json", "prompt.txt"}
+PUBLIC_DIRS = {"models", "docs", "assets"}
+
+mimetypes.add_type("text/markdown", ".md")
 
 
-def label_for(filename: str) -> str:
-    """Derive a clean display label from a model filename.
-
-    'Treetop_village_GPT6_Astra_High.html' -> 'GPT6 Astra High'
-    """
-    name = filename[:-5] if filename.lower().endswith(".html") else filename
-    name = re.sub(r"^Treetop_village_", "", name, flags=re.IGNORECASE)
-    return name.replace("_", " ").strip() or filename
-
-
-def list_models() -> list[dict]:
-    """Read models/ live and return sorted {file, label} entries for .html files."""
-    if not MODELS_DIR.is_dir():
-        return []
-    entries = [
-        {"file": p.name, "label": label_for(p.name)}
-        for p in MODELS_DIR.iterdir()
-        if p.is_file() and p.suffix.lower() == ".html"
-    ]
-    entries.sort(key=lambda e: e["label"].lower())
-    return entries
-
-
-def safe_resolve(base: Path, filename: str) -> Path | None:
-    """Resolve filename inside base, rejecting traversal/absolute paths.
-
-    Returns the resolved path if it is an existing file inside base, else None.
-    """
-    filename = unquote(filename)
-    if not filename or filename.startswith("/") or ".." in filename.split("/"):
+def resolve(url_path: str) -> Path | None:
+    """Map a URL path to a file we are willing to serve, or None."""
+    path = unquote(url_path)
+    if path in ("", "/"):
+        path = "/index.html"
+    rel = Path(path.lstrip("/"))
+    if any(part in ("", ".", "..") for part in rel.parts):
         return None
-    candidate = (base / filename).resolve()
+    if len(rel.parts) == 1 and rel.name not in ROOT_FILES:
+        return None
+    if len(rel.parts) > 1 and rel.parts[0] not in PUBLIC_DIRS:
+        return None
+    target = (ROOT / rel).resolve()
     try:
-        candidate.relative_to(base.resolve())
+        target.relative_to(ROOT)
     except ValueError:
         return None
-    return candidate if candidate.is_file() else None
+    return target if target.is_file() else None
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "TreetopViewer/1.0"
+    server_version = "TreetopViewer/2.0"
 
-    # ---- helpers -------------------------------------------------------
-
-    def _send(self, status, body: bytes, content_type: str):
+    def _send(self, status: HTTPStatus, body: bytes, content_type: str) -> None:
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
+        self.send_header("Cache-Control", "no-cache")
         self.end_headers()
         if self.command != "HEAD":
             self.wfile.write(body)
 
-    def _send_file(self, path: Path, content_type: str):
+    def do_GET(self) -> None:  # noqa: N802 (http.server naming)
+        target = resolve(urlparse(self.path).path)
+        if target is None:
+            self._send(HTTPStatus.NOT_FOUND, b"Not found", "text/plain; charset=utf-8")
+            return
+        ctype, _ = mimetypes.guess_type(target.name)
+        ctype = ctype or "application/octet-stream"
+        if ctype.startswith("text/") or ctype in ("application/json", "application/javascript"):
+            ctype += "; charset=utf-8"
         try:
-            self._send(HTTPStatus.OK, path.read_bytes(), content_type)
+            self._send(HTTPStatus.OK, target.read_bytes(), ctype)
         except OSError:
-            self._send_text(HTTPStatus.INTERNAL_SERVER_ERROR, "Could not read file")
+            self._send(HTTPStatus.INTERNAL_SERVER_ERROR, b"Could not read file", "text/plain; charset=utf-8")
 
-    def _send_text(self, status, message: str):
-        self._send(status, message.encode("utf-8"), "text/plain; charset=utf-8")
-
-    def _send_json(self, payload):
-        self._send(
-            HTTPStatus.OK,
-            json.dumps(payload).encode("utf-8"),
-            "application/json; charset=utf-8",
-        )
-
-    # ---- routing -------------------------------------------------------
-
-    def do_GET(self):
-        self.route()
-
-    def do_HEAD(self):
-        self.route()
-
-    def route(self):
-        path = urlparse(self.path).path
-
-        if path == "/api/models":
-            self._send_json({"models": list_models()})
-            return
-
-        if path == "/api/prompt":
-            if PROMPT_FILE.is_file():
-                self._send_file(PROMPT_FILE, "text/plain; charset=utf-8")
-            else:
-                self._send_text(HTTPStatus.NOT_FOUND, "prompt.txt not found")
-            return
-
-        if path in STATIC_FILES:
-            name, content_type = STATIC_FILES[path]
-            target = WEB_DIR / name
-            if target.is_file():
-                self._send_file(target, content_type)
-            else:
-                self._send_text(HTTPStatus.NOT_FOUND, f"Missing frontend file: {name}")
-            return
-
-        if path.startswith("/models/"):
-            resolved = safe_resolve(MODELS_DIR, path[len("/models/"):])
-            if resolved:
-                self._send_file(resolved, "text/html; charset=utf-8")
-            else:
-                self._send_text(HTTPStatus.NOT_FOUND, "Model not found")
-            return
-
-        self._send_text(HTTPStatus.NOT_FOUND, "Not found")
+    do_HEAD = do_GET
 
     def log_message(self, fmt, *args):  # quieter, single-line logging
         sys.stderr.write("  %s\n" % (fmt % args))
 
 
-def main():
+def main() -> None:
     port = DEFAULT_PORT
     if len(sys.argv) > 1:
         try:
@@ -155,14 +89,10 @@ def main():
         except ValueError:
             print(f"Invalid port '{sys.argv[1]}', using {DEFAULT_PORT}")
 
-    if not WEB_DIR.is_dir():
-        print(f"Warning: {WEB_DIR} does not exist yet.")
-
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    url = f"http://localhost:{port}/"
     print("Treetop Benchmark Viewer")
-    print(f"  serving on {url}")
-    print(f"  models:    {MODELS_DIR}")
+    print(f"  serving {ROOT}")
+    print(f"  on      http://localhost:{port}/")
     print("  press Ctrl+C to stop")
     try:
         server.serve_forever()
