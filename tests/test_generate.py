@@ -209,7 +209,7 @@ class SseTests(unittest.TestCase):
             {"choices": [{"delta": {}, "finish_reason": "stop"}]},
             {"choices": [], "usage": {"prompt_tokens": 10, "completion_tokens": 20, "cost": 0.01}},
         ]
-        result = generate.collect_stream(iter(chunks), on_progress=lambda n: None)
+        result = generate.collect_stream(iter(chunks), on_progress=lambda n, r: None)
         self.assertEqual(result.text, "<!DOCTYPE html><html></html>")
         self.assertEqual(result.finish_reason, "stop")
         self.assertEqual(result.usage["completion_tokens"], 20)

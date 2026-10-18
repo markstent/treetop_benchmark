@@ -284,7 +284,7 @@ class StreamResult:
     served_provider: str | None = None
 
 
-def collect_stream(chunks: Iterable[dict], on_progress: Callable[[int], None]) -> StreamResult:
+def collect_stream(chunks: Iterable[dict], on_progress: Callable[[int, int], None]) -> StreamResult:
     result = StreamResult()
     parts: list[str] = []
     chars = 0
@@ -304,10 +304,11 @@ def collect_stream(chunks: Iterable[dict], on_progress: Callable[[int], None]) -
             if content:
                 parts.append(content)
                 chars += len(content)
-                on_progress(chars)
+                on_progress(chars, result.reasoning_chars)
             reasoning = delta.get("reasoning") or delta.get("reasoning_content")
             if reasoning:
                 result.reasoning_chars += len(reasoning)
+                on_progress(chars, result.reasoning_chars)
             if choice.get("finish_reason"):
                 result.finish_reason = choice["finish_reason"]
     result.text = "".join(parts)
@@ -318,7 +319,7 @@ def collect_stream(chunks: Iterable[dict], on_progress: Callable[[int], None]) -
 # HTTP
 # --------------------------------------------------------------------------- #
 
-def request_stream(provider: Provider, payload: dict, on_progress: Callable[[int], None]) -> StreamResult:
+def request_stream(provider: Provider, payload: dict, on_progress: Callable[[int, int], None]) -> StreamResult:
     """POST the chat request and collect the streamed reply, with retries."""
     url = provider.base_url + "/chat/completions"
     headers = {
@@ -337,10 +338,10 @@ def request_stream(provider: Provider, payload: dict, on_progress: Callable[[int
             with urllib.request.urlopen(req, timeout=CONNECT_TIMEOUT_S) as resp:
                 resp.fp.raw._sock.settimeout(STALL_TIMEOUT_S)  # type: ignore[attr-defined]
 
-                def progress(n: int) -> None:
+                def progress(chars: int, reasoning_chars: int) -> None:
                     nonlocal got_content
                     got_content = True
-                    on_progress(n)
+                    on_progress(chars, reasoning_chars)
 
                 return collect_stream(iter_sse_json(resp), progress)
         except urllib.error.HTTPError as e:
@@ -352,7 +353,7 @@ def request_stream(provider: Provider, payload: dict, on_progress: Callable[[int
             retryable = True
         except ApiError as e:
             last_error = e
-            retryable = False
+            retryable = not got_content
 
         if got_content or not retryable or attempt == MAX_ATTEMPTS:
             break
@@ -436,17 +437,18 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  provider:  {provider.name} ({provider.base_url})")
     print(f"  model:     {args.model}")
     print(f"  reasoning: {args.reasoning or 'provider default'}")
-    print(f"  output:    {out_path.relative_to(ROOT)}")
+    print(f"  output:    {out_path.relative_to(ROOT)}", flush=True)
 
     started = datetime.now(timezone.utc)
     t0 = time.monotonic()
     last_print = [0.0]
 
-    def on_progress(chars: int) -> None:
+    def on_progress(chars: int, reasoning_chars: int) -> None:
         now = time.monotonic()
         if now - last_print[0] >= 2:
             last_print[0] = now
-            print(f"\r  streaming… {chars:>8,} chars  {now - t0:6.0f}s", end="", flush=True)
+            think = f"  (thinking {reasoning_chars:,})" if reasoning_chars else ""
+            print(f"\r  streaming… {chars:>8,} chars{think}  {now - t0:6.0f}s", end="", flush=True)
 
     status = "ok"
     error: str | None = None
