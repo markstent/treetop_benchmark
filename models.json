@@ -35,6 +35,33 @@
       "effort": "high",
       "date": "2026-10-01",
       "note": "Legacy baseline added before any tooling existed. Exact settings and interface were not recorded; the High suffix is taken to mean reasoning effort high."
+    },
+    {
+      "file": "Treetop_village_Grok_4.7_Xhigh.html",
+      "label": "Grok 4.7 Xhigh",
+      "model": "cloud-grok-4-7",
+      "provider": "litellm (http://localhost:4000)",
+      "effort": "xhigh",
+      "date": "2026-10-18",
+      "note": "As generated, no edits."
+    },
+    {
+      "file": "Treetop_village_Muse_Wonder_High.html",
+      "label": "Muse Wonder High",
+      "model": "cloud-muse-wonder",
+      "provider": "litellm (http://localhost:4000)",
+      "effort": "high",
+      "date": "2026-10-18",
+      "note": "As generated, no edits."
+    },
+    {
+      "file": "Treetop_village_Kimi_K3_High.html",
+      "label": "Kimi K3 High",
+      "model": "cloud-kimi-k3",
+      "provider": "litellm (http://localhost:4000)",
+      "effort": "high",
+      "date": "2026-10-18",
+      "note": "As generated, no edits."
     }
   ]
 }
