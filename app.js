@@ -305,6 +305,7 @@ async function init() {
     const data = await res.json();
     models = Array.isArray(data.models) ? data.models.filter((m) => m && m.file) : [];
     for (const m of models) if (!m.label) m.label = m.file.replace(/\.html$/i, "").replace(/_/g, " ");
+    models.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base", numeric: true }));
   } catch (err) {
     models = [];
   }
