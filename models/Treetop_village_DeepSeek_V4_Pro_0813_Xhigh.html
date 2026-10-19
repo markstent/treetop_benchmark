@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Treetop Village - Storybook 3D</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', 'Garamond', 'Georgia', serif;
+      background-color: #0a0a14;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+    #info {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      color: #f0e8d0;
+      padding: 12px 18px;
+      border-radius: 28px;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 215, 150, 0.3);
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      pointer-events: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      z-index: 10;
+    }
+    #help-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(20, 15, 10, 0.85);
+      color: #f5e6d3;
+      padding: 30px 40px;
+      border-radius: 40px;
+      backdrop-filter: blur(12px);
+      border: 2px solid #b5956a;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+      font-size: 16px;
+      z-index: 100;
+      text-align: center;
+      max-width: 500px;
+      transition: opacity 0.3s;
+      pointer-events: auto;
+      line-height: 1.7;
+    }
+    #help-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #help-overlay h2 {
+      margin-top: 0;
+      color: #ffdba0;
+      font-weight: normal;
+      border-bottom: 1px solid #b5956a;
+      padding-bottom: 8px;
+    }
+    #help-overlay ul {
+      text-align: left;
+      margin: 10px 0;
+    }
+    #close-help {
+      margin-top: 20px;
+      background: #b5956a;
+      border: none;
+      color: #1a120a;
+      padding: 10px 24px;
+      border-radius: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+    #close-help:hover {
+      background: #e2c28b;
+    }
+    #panel-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(30, 25, 20, 0.8);
+      color: #ffdba0;
+      border: 2px solid #b5956a;
+      border-radius: 30px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      z-index: 50;
+      backdrop-filter: blur(8px);
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    #controls-panel {
+      position: absolute;
+      top: 70px;
+      right: 20px;
+      width: 280px;
+      background: rgba(25, 20, 15, 0.9);
+      color: #e0d0b5;
+      border-radius: 24px;
+      padding: 18px 18px 20px;
+      backdrop-filter: blur(16px);
+      border: 1px solid #b5956a;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+      z-index: 50;
+      transition: all 0.3s ease;
+      max-height: 80vh;
+      overflow-y: auto;
+      pointer-events: auto;
+    }
+    #controls-panel.collapsed {
+      right: -320px;
+      opacity: 0;
+      pointer-events: none;
+    }
+    #controls-panel h3 {
+      margin: 5px 0 15px;
+      color: #ffdba0;
+      text-align: center;
+      font-weight: normal;
+      letter-spacing: 2px;
+    }
+    .slider-group {
+      margin-bottom: 14px;
+    }
+    .slider-group label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: #c0b090;
+    }
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      background: transparent;
+      accent-color: #e0a96d;
+    }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background: #4a3e2e;
+      border: 1px solid #b5956a;
+      color: #f0e0c0;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+      transition: 0.2s;
+    }
+    .btn:hover {
+      background: #6a5a42;
+    }
+    #fps-counter {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      color: #e0d0b0;
+      background: rgba(0,0,0,0.5);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      z-index: 10;
+      backdrop-filter: blur(4px);
+    }
+    @media (max-width: 700px) {
+      #controls-panel { width: 240px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="info">🌳 Treetop Village | Drag to orbit | Scroll to zoom</div>
+  <div id="fps-counter">FPS: <span id="fps-value">60</span></div>
+  <button id="panel-toggle">⚙️ Settings</button>
+  <div id="controls-panel">
+    <h3>VILLAGE CONTROLS</h3>
+    <div class="slider-group">
+      <label>Time of Day <span id="time-label">12:00</span></label>
+      <input type="range" id="time-slider" min="0" max="24" step="0.1" value="14">
+    </div>
+    <div class="slider-group">
+      <label>Season <span id="season-label">Summer</span></label>
+      <input type="range" id="season-slider" min="0" max="3" step="1" value="1">
+    </div>
+    <div class="slider-group">
+      <label>Fog Density <span id="fog-label">0.008</span></label>
+      <input type="range" id="fog-slider" min="0.002" max="0.025" step="0.001" value="0.008">
+    </div>
+    <div class="slider-group">
+      <label>Wind Strength <span id="wind-label">0.4</span></label>
+      <input type="range" id="wind-slider" min="0.0" max="1.5" step="0.05" value="0.4">
+    </div>
+    <div class="slider-group">
+      <label>Dwellings <span id="dwell-label">14</span></label>
+      <input type="range" id="dwell-slider" min="8" max="20" step="1" value="14">
+    </div>
+    <div class="slider-group">
+      <label>Villagers <span id="villager-label">7</span></label>
+      <input type="range" id="villager-slider" min="2" max="12" step="1" value="7">
+    </div>
+    <div class="slider-group">
+      <label>Shadow Quality <span id="shadow-label">High</span></label>
+      <input type="range" id="shadow-slider" min="0" max="2" step="1" value="2">
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="regenerate-btn">🌱 Regenerate</button>
+      <button class="btn" id="reset-view-btn">🔄 Reset View</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="toggle-mode-btn">🚶 Walk Mode</button>
+      <button class="btn" id="help-btn">❓ Help</button>
+    </div>
+  </div>
+  <div id="help-overlay" class="hidden">
+    <h2>🌿 WELCOME TO THE TREETOP VILLAGE</h2>
+    <ul>
+      <li><strong>Orbit Mode:</strong> Left drag to rotate, right drag to pan, scroll to zoom.</li>
+      <li><strong>Walk Mode:</strong> WASD move, mouse look. Walk on platforms/bridges.</li>
+      <li><strong>Toggle modes:</strong> Button or press <kbd>F</kbd>.</li>
+      <li><strong>Reset view:</strong> Button or press <kbd>R</kbd>.</li>
+      <li><strong>Help:</strong> Press <kbd>H</kbd> to toggle this overlay.</li>
+    </ul>
+    <button id="close-help">🌞 Let's explore!</button>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // ---------- GLOBAL STATE ----------
+    const state = {
+      timeOfDay: 14,
+      season: 1, // 0 spring, 1 summer, 2 autumn, 3 winter
+      fogDensity: 0.008,
+      windStrength: 0.4,
+      dwellCount: 14,
+      villagerCount: 7,
+      shadowQuality: 2, // 0 off, 1 low, 2 high
+      walkMode: false,
+      regenerate: 0,
+    };
+
+    // ---------- SCENE SETUP ----------
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xaaccff);
+    scene.fog = new THREE.FogExp2(0xc0d0e0, state.fogDensity);
+
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 350);
+    camera.position.set(35, 25, 60);
+    camera.lookAt(0, 12, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    document.body.appendChild(renderer.domElement);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
+    scene.add(ambientLight);
+    const sunLight = new THREE.DirectionalLight(0xfff0d0, 2.5);
+    sunLight.castShadow = true;
+    sunLight.receiveShadow = true;
+    sunLight.shadow.mapSize.width = state.shadowQuality === 2 ? 2048 : 512;
+    sunLight.shadow.mapSize.height = state.shadowQuality === 2 ? 2048 : 512;
+    sunLight.shadow.camera.near = 1;
+    sunLight.shadow.camera.far = 120;
+    sunLight.shadow.camera.left = -60;
+    sunLight.shadow.camera.right = 60;
+    sunLight.shadow.camera.top = 60;
+    sunLight.shadow.camera.bottom = -60;
+    sunLight.shadow.bias = -0.0005;
+    scene.add(sunLight);
+    scene.add(sunLight.target);
+
+    // Fill light
+    const fillLight = new THREE.HemisphereLight(0xb0c0e0, 0x403020, 0.7);
+    scene.add(fillLight);
+
+    // ---------- PROCEDURAL TEXTURES ----------
+    function createBarkTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256; canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#6b4f3a';
+      ctx.fillRect(0,0,256,256);
+      for(let i=0; i<2000; i++) {
+        const x = Math.random()*256, y = Math.random()*256;
+        const w = Math.random()*20+5, h = Math.random()*60+10;
+        ctx.fillStyle = `rgba(${80+Math.random()*40}, ${50+Math.random()*20}, ${30+Math.random()*15}, 0.3)`;
+        ctx.fillRect(x, y, w, h);
+      }
+      for(let i=0; i<100; i++) {
+        ctx.beginPath();
+        ctx.moveTo(Math.random()*256, Math.random()*256);
+        ctx.lineTo(Math.random()*256, Math.random()*256);
+        ctx.strokeStyle = `rgba(40,30,20,0.5)`;
+        ctx.lineWidth = Math.random()*3;
+        ctx.stroke();
+      }
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+    const barkTex = createBarkTexture();
+
+    function createWoodTexture() {
+      const c = document.createElement('canvas'); c.width=256; c.height=256;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#9b7c5b'; ctx.fillRect(0,0,256,256);
+      for(let i=0;i<60;i++){ ctx.fillStyle=`rgba(70,50,30,${Math.random()*0.5})`; ctx.fillRect(Math.random()*256, Math.random()*256, 60+Math.random()*180, 1+Math.random()*3); }
+      const tex = new THREE.CanvasTexture(c); tex.wrapS=THREE.RepeatWrapping; tex.wrapT=THREE.RepeatWrapping; return tex;
+    }
+    const woodTex = createWoodTexture();
+
+    function createLeafTexture() {
+      const c = document.createElement('canvas'); c.width=128; c.height=128;
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0,0,128,128);
+      ctx.fillStyle = '#3b6e2a'; ctx.fillRect(0,0,128,128);
+      for(let i=0;i<200;i++){ ctx.fillStyle=`hsl(${90+Math.random()*30}, 60%, ${30+Math.random()*30}%)`; ctx.beginPath(); ctx.arc(Math.random()*128, Math.random()*128, 4+Math.random()*12, 0, Math.PI*2); ctx.fill(); }
+      const tex = new THREE.CanvasTexture(c); tex.wrapS=THREE.RepeatWrapping; tex.wrapT=THREE.RepeatWrapping; return tex;
+    }
+    const leafTex = createLeafTexture();
+
+    // ---------- GEOMETRY MERGE UTILITIES ----------
+    const mergedGeometries = [];
+    function mergeGroup(objects) {
+      const group = new THREE.Group();
+      objects.forEach(o => group.add(o));
+      return group;
+    }
+
+    // ---------- VILLAGE DATA ----------
+    const trees = [];
+    const platforms = [];
+    const bridges = [];
+    const buildings = [];
+    const villagers = [];
+    const birds = [];
+    const particles = [];
+    const lanterns = [];
+    let villageGroup = new THREE.Group();
+    scene.add(villageGroup);
+
+    function clearVillage() {
+      villageGroup.children.forEach(child => {
+        if(child.geometry) child.geometry.dispose();
+        if(child.material) {
+          if(Array.isArray(child.material)) child.material.forEach(m=>m.dispose());
+          else child.material.dispose();
+        }
+      });
+      villageGroup.clear();
+      trees.length=0; platforms.length=0; bridges.length=0; buildings.length=0; villagers.length=0; birds.length=0; lanterns.length=0;
+    }
+
+    // ---------- BUILD VILLAGE ----------
+    function generateVillage(seed=1) {
+      clearVillage();
+      const rng = mulberry32(seed);
+      
+      // Ground
+      const groundGeo = new THREE.CircleGeometry(120, 64);
+      const groundMat = new THREE.MeshStandardMaterial({color:0x3d5a3d, roughness:0.9});
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI/2;
+      ground.position.y = -0.1;
+      ground.receiveShadow = true;
+      villageGroup.add(ground);
+      
+      // Stream
+      const streamGeo = new THREE.BoxGeometry(70, 0.2, 2.5);
+      const streamMat = new THREE.MeshStandardMaterial({color:0x4a7a9a, emissive:0x102030, roughness:0.3, transparent:true, opacity:0.8});
+      const stream = new THREE.Mesh(streamGeo, streamMat);
+      stream.position.set(-5, 0.05, 12);
+      stream.rotation.y = 0.3;
+      stream.receiveShadow = true;
+      villageGroup.add(stream);
+      
+      // Trees (7+ giant trees)
+      const treePositions = [
+        {x:-18, z:-10, height:32}, {x:10, z:-22, height:42}, {x:25, z:-8, height:38}, 
+        {x:-25, z:15, height:35}, {x:8, z:20, height:30}, {x:35, z:18, height:45}, 
+        {x:-8, z:-20, height:36}, {x:-32, z:-5, height:40}, {x:15, z:30, height:33}
+      ];
+      treePositions.forEach((pos, idx) => {
+        createTree(pos.x, pos.z, pos.height, rng, idx);
+      });
+      
+      // Platforms & Buildings
+      createPlatformAndBuilding(0, 12, 18, rng, 2); // central large
+      createPlatformAndBuilding(-15, 20, 22, rng, 1, true);
+      createPlatformAndBuilding(12, 18, 25, rng, 1);
+      createPlatformAndBuilding(-6, 16, 28, rng, 2);
+      createPlatformAndBuilding(28, 18, 20, rng, 1);
+      createPlatformAndBuilding(-30, 14, 24, rng, 1);
+      createPlatformAndBuilding(30, 15, 28, rng, 2);
+      createPlatformAndBuilding(-22, 12, 30, rng, 1);
+      createPlatformAndBuilding(20, 14, 32, rng, 1);
+      createPlatformAndBuilding(10, 10, 20, rng, 1);
+      createPlatformAndBuilding(-35, 15, 35, rng, 1);
+      createPlatformAndBuilding(42, 16, 30, rng, 1);
+      createPlatformAndBuilding(5, 22, 38, rng, 1);
+      createPlatformAndBuilding(-12, 19, 42, rng, 1);
+      
+      // Bridges between some platforms
+      for(let i=0; i<platforms.length-1; i+=2) {
+        if(i+1 < platforms.length) createBridge(platforms[i], platforms[i+1], rng);
+      }
+      createBridge(platforms[0], platforms[2], rng);
+      createBridge(platforms[3], platforms[5], rng);
+      createBridge(platforms[6], platforms[8], rng);
+      
+      // Rope lift
+      createRopeLift(platforms[0], rng);
+      
+      // Villagers, birds, particles
+      spawnVillagers();
+      spawnBirds(rng);
+      
+      // Lookout tower at tallest tree
+      createLookoutTower(35, 18, 45, rng);
+    }
+    
+    function mulberry32(a) {
+      return function() {
+        a |= 0; a = a + 0x6D2B79F5 | 0;
+        let t = Math.imul(a ^ a >>> 15, 1 | a);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      }
+    }
+    
+    function createTree(x, z, height, rng, idx) {
+      const trunkGroup = new THREE.Group();
+      const trunkHeight = height * 0.7;
+      const trunkRadius = 1.2 + rng()*1.5;
+      const trunkGeo = new THREE.CylinderGeometry(trunkRadius*0.6, trunkRadius*1.2, trunkHeight, 12);
+      const trunkMat = new THREE.MeshStandardMaterial({map: barkTex, color:0x7a5c45, roughness:0.9});
+      const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+      trunk.position.y = trunkHeight/2;
+      trunk.castShadow = true; trunk.receiveShadow = true;
+      trunkGroup.add(trunk);
+      
+      // Roots
+      for(let i=0; i<6; i++) {
+        const rootGeo = new THREE.CylinderGeometry(0.3, 0.7, 2.5+rng()*2, 5);
+        const root = new THREE.Mesh(rootGeo, trunkMat);
+        root.position.y = 0.5;
+        root.rotation.z = (Math.PI/4) * (rng()-0.5);
+        root.rotation.x = (Math.PI/4) * (rng()-0.3);
+        root.position.x = Math.cos(i)*trunkRadius*1.5;
+        root.position.z = Math.sin(i)*trunkRadius*1.5;
+        root.castShadow = true;
+        trunkGroup.add(root);
+      }
+      
+      // Branches & Canopy
+      const branchGroup = new THREE.Group();
+      const branchCount = 8 + Math.floor(rng()*8);
+      for(let i=0; i<branchCount; i++) {
+        const branchHeight = trunkHeight * (0.6 + rng()*0.4);
+        const branchLen = 3+rng()*7;
+        const branchGeo = new THREE.CylinderGeometry(0.3, 0.9, branchLen, 6);
+        const branch = new THREE.Mesh(branchGeo, trunkMat);
+        branch.position.y = branchHeight;
+        branch.rotation.z = Math.PI/2 + (rng()-0.5)*1.2;
+        branch.rotation.y = rng()*Math.PI*2;
+        branch.position.x = Math.cos(branch.rotation.y)*branchLen*0.5;
+        branch.position.z = Math.sin(branch.rotation.y)*branchLen*0.5;
+        branch.castShadow = true;
+        branchGroup.add(branch);
+        
+        // Leaf clusters
+        const leafGroup = new THREE.Group();
+        const leafCount = 15+Math.floor(rng()*20);
+        for(let j=0; j<leafCount; j++) {
+          const leafGeo = new THREE.IcosahedronGeometry(0.8+rng()*1.2, 0);
+          const leafMat = new THREE.MeshStandardMaterial({color: new THREE.Color().setHSL(0.28 + rng()*0.1, 0.7, 0.3+rng()*0.2), roughness:0.8});
+          const leaf = new THREE.Mesh(leafGeo, leafMat);
+          leaf.position.set((rng()-0.5)*branchLen, (rng()-0.5)*1.5, (rng()-0.5)*branchLen);
+          leaf.castShadow = true;
+          leafGroup.add(leaf);
+        }
+        leafGroup.position.copy(branch.position);
+        leafGroup.rotation.y = branch.rotation.y;
+        branchGroup.add(leafGroup);
+      }
+      trunkGroup.add(branchGroup);
+      
+      trunkGroup.position.set(x, 0, z);
+      villageGroup.add(trunkGroup);
+      trees.push({group: trunkGroup, height, x, z});
+    }
+    
+    function createPlatformAndBuilding(x, y, z, rng, type=1, isCentral=false) {
+      const platformGroup = new THREE.Group();
+      const size = isCentral ? 12 : 6+rng()*5;
+      const platformGeo = new THREE.BoxGeometry(size, 0.5, size);
+      const platformMat = new THREE.MeshStandardMaterial({map: woodTex, color:0x8b6b4a, roughness:0.8});
+      const platform = new THREE.Mesh(platformGeo, platformMat);
+      platform.position.y = y;
+      platform.castShadow = true; platform.receiveShadow = true;
+      platformGroup.add(platform);
+      
+      // Railing
+      const railMat = new THREE.MeshStandardMaterial({color:0x5a3e2a});
+      for(let i=0; i<4; i++) {
+        const railGeo = new THREE.CylinderGeometry(0.15,0.15, size, 6);
+        const rail = new THREE.Mesh(railGeo, railMat);
+        if(i<2) { rail.position.set((i===0?-1:1)*(size/2), y+0.8, 0); rail.rotation.z=Math.PI/2; }
+        else { rail.position.set(0, y+0.8, (i===2?-1:1)*(size/2)); rail.rotation.x=Math.PI/2; }
+        rail.castShadow = true;
+        platformGroup.add(rail);
+      }
+      
+      // Building
+      const building = createBuilding(size*0.7, y+0.5, rng, type, isCentral);
+      building.position.y = 0.5;
+      platformGroup.add(building);
+      
+      platformGroup.position.set(x, 0, z);
+      villageGroup.add(platformGroup);
+      platforms.push({group: platformGroup, x, y, z, size, isCentral});
+    }
+    
+    function createBuilding(width, baseY, rng, type, isCentral) {
+      const group = new THREE.Group();
+      const h = isCentral ? 6 : 3.5+rng()*3;
+      const w = width * 0.9;
+      const d = width * 0.8;
+      
+      // Walls
+      const wallMat = new THREE.MeshStandardMaterial({map: woodTex, color:0x9a7b55, roughness:0.85});
+      const wallGeo = new THREE.BoxGeometry(w, h, d);
+      const walls = new THREE.Mesh(wallGeo, wallMat);
+      walls.position.y = h/2;
+      walls.castShadow = true; walls.receiveShadow = true;
+      group.add(walls);
+      
+      // Roof
+      const roofMat = new THREE.MeshStandardMaterial({color: isCentral ? 0x8c4f2a : 0x6b3e1a, roughness:0.9});
+      const roofGeo = new THREE.ConeGeometry(w*0.7, h*0.5, 4);
+      const roof = new THREE.Mesh(roofGeo, roofMat);
+      roof.position.y = h + h*0.25;
+      roof.rotation.y = Math.PI/4;
+      roof.castShadow = true;
+      group.add(roof);
+      
+      // Door & Windows
+      const darkMat = new THREE.MeshStandardMaterial({color:0x2a1a0e});
+      const doorGeo = new THREE.BoxGeometry(1.2, 2, 0.2);
+      const door = new THREE.Mesh(doorGeo, darkMat);
+      door.position.set(0, 1, d/2);
+      group.add(door);
+      
+      const windowMat = new THREE.MeshStandardMaterial({color:0x3a4a6a, emissive:0x101020});
+      for(let i=0; i<2; i++) {
+        const winGeo = new THREE.BoxGeometry(1.2, 1.2, 0.2);
+        const win = new THREE.Mesh(winGeo, windowMat);
+        win.position.set((i===0?-1:1)*w*0.25, h*0.6, d/2);
+        group.add(win);
+      }
+      
+      // Chimney / stovepipe
+      const chimneyGeo = new THREE.CylinderGeometry(0.4,0.4, 1.8, 6);
+      const chimneyMat = new THREE.MeshStandardMaterial({color:0x4a3520});
+      const chimney = new THREE.Mesh(chimneyGeo, chimneyMat);
+      chimney.position.set(w*0.25, h+0.8, d*0.2);
+      chimney.castShadow = true;
+      group.add(chimney);
+      
+      // Smoke particles (handled separately)
+      const smoke = [];
+      for(let i=0; i<8; i++) {
+        const pGeo = new THREE.SphereGeometry(0.4+rng()*0.3, 4);
+        const pMat = new THREE.MeshStandardMaterial({color:0xcccccc, transparent:true, opacity:0.5});
+        const p = new THREE.Mesh(pGeo, pMat);
+        p.position.set(w*0.25, h+1.5, d*0.2);
+        p.userData = {baseY: h+1.5, speed: 0.2+rng()*0.5, offset: rng()*Math.PI*2};
+        group.add(p);
+        smoke.push(p);
+      }
+      group.userData.smoke = smoke;
+      group.userData.smokeTimer = 0;
+      
+      buildings.push({group, smoke});
+      return group;
+    }
+    
+    function createBridge(platformA, platformB, rng) {
+      if(!platformA || !platformB) return;
+      const start = platformA.group.position.clone(); start.y = platformA.y;
+      const end = platformB.group.position.clone(); end.y = platformB.y;
+      const dist = start.distanceTo(end);
+      if(dist < 2 || dist > 25) return;
+      
+      const bridgeGroup = new THREE.Group();
+      const steps = Math.floor(dist / 1.5) + 2;
+      for(let i=0; i<steps; i++) {
+        const t = i/(steps-1);
+        const pos = new THREE.Vector3().lerpVectors(start, end, t);
+        const sag = Math.sin(t * Math.PI) * 1.2;
+        pos.y -= sag;
+        
+        // Plank
+        const plankGeo = new THREE.BoxGeometry(1.2, 0.15, 0.6);
+        const plankMat = new THREE.MeshStandardMaterial({map: woodTex, color:0x8b6b4a});
+        const plank = new THREE.Mesh(plankGeo, plankMat);
+        plank.position.copy(pos);
+        plank.rotation.y = Math.atan2(end.x-start.x, end.z-start.z);
+        plank.castShadow = true; plank.receiveShadow = true;
+        bridgeGroup.add(plank);
+      }
+      
+      // Rope railings
+      const ropeMat = new THREE.MeshStandardMaterial({color:0x4a3220});
+      for(let side=-1; side<=1; side+=2) {
+        const points = [];
+        for(let i=0; i<steps; i++) {
+          const t = i/(steps-1);
+          const pos = new THREE.Vector3().lerpVectors(start, end, t);
+          pos.y -= Math.sin(t * Math.PI) * 1.2;
+          pos.x += side * 0.7;
+          points.push(pos);
+        }
+        const curve = new THREE.CatmullRomCurve3(points);
+        const tubeGeo = new THREE.TubeGeometry(curve, steps*2, 0.15, 4);
+        const tube = new THREE.Mesh(tubeGeo, ropeMat);
+        tube.castShadow = true;
+        bridgeGroup.add(tube);
+      }
+      
+      villageGroup.add(bridgeGroup);
+      bridges.push({group: bridgeGroup, start, end, length: dist});
+    }
+    
+    function createRopeLift(platform, rng) {
+      const liftGroup = new THREE.Group();
+      const height = 8;
+      const basePos = platform.group.position.clone(); basePos.y = platform.y;
+      
+      const poleGeo = new THREE.CylinderGeometry(0.3,0.3, height, 6);
+      const poleMat = new THREE.MeshStandardMaterial({color:0x6a4a2a});
+      const pole = new THREE.Mesh(poleGeo, poleMat);
+      pole.position.set(2, height/2, 2);
+      pole.castShadow = true;
+      liftGroup.add(pole);
+      
+      const pulleyGeo = new THREE.TorusGeometry(0.8, 0.2, 6, 12);
+      const pulley = new THREE.Mesh(pulleyGeo, new THREE.MeshStandardMaterial({color:0x333333}));
+      pulley.position.set(2, height-0.5, 2);
+      liftGroup.add(pulley);
+      
+      const basketGeo = new THREE.BoxGeometry(1.5, 1, 1.5);
+      const basket = new THREE.Mesh(basketGeo, new THREE.MeshStandardMaterial({color:0x8b6b4a}));
+      basket.position.set(2, 2, 2);
+      basket.castShadow = true;
+      liftGroup.add(basket);
+      
+      liftGroup.position.copy(basePos);
+      villageGroup.add(liftGroup);
+    }
+    
+    function createLookoutTower(x, y, z, rng) {
+      const towerGroup = new THREE.Group();
+      const baseH = 10;
+      const platformGeo = new THREE.CylinderGeometry(3, 3, 0.5, 8);
+      const plat = new THREE.Mesh(platformGeo, new THREE.MeshStandardMaterial({map: woodTex, color:0x7a5c45}));
+      plat.position.y = baseH;
+      plat.castShadow = true; plat.receiveShadow = true;
+      towerGroup.add(plat);
+      
+      const roofGeo = new THREE.ConeGeometry(3.5, 2, 8);
+      const roof = new THREE.Mesh(roofGeo, new THREE.MeshStandardMaterial({color:0x5a3e2a}));
+      roof.position.y = baseH+1.5;
+      roof.castShadow = true;
+      towerGroup.add(roof);
+      
+      const poleGeo = new THREE.CylinderGeometry(0.4,0.4, baseH, 6);
+      const pole = new THREE.Mesh(poleGeo, new THREE.MeshStandardMaterial({color:0x6b4f3a}));
+      pole.position.y = baseH/2;
+      pole.castShadow = true;
+      towerGroup.add(pole);
+      
+      towerGroup.position.set(x, y, z);
+      villageGroup.add(towerGroup);
+    }
+    
+    function spawnVillagers() {
+      // Simple stylized figures
+      for(let i=0; i<state.villagerCount; i++) {
+        const group = new THREE.Group();
+        const bodyMat = new THREE.MeshStandardMaterial({color: new THREE.Color().setHSL(Math.random(), 0.5, 0.5)});
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.35,0.9,6), bodyMat);
+        body.position.y = 0.95;
+        body.castShadow = true;
+        group.add(body);
+        const headMat = new THREE.MeshStandardMaterial({color:0xe0c0a0});
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.25,6), headMat);
+        head.position.y = 1.6;
+        head.castShadow = true;
+        group.add(head);
+        villagers.push({group, speed: 0.02 + Math.random()*0.04, offset: Math.random()*100});
+        villageGroup.add(group);
+      }
+    }
+    
+    function spawnBirds(rng) {
+      for(let i=0; i<8; i++) {
+        const bird = new THREE.Group();
+        const bodyMat = new THREE.MeshStandardMaterial({color:0x3a2a1a});
+        const body = new THREE.Mesh(new THREE.SphereGeometry(0.3,5), bodyMat);
+        body.scale.set(1.4,0.6,0.6);
+        bird.add(body);
+        birds.push({group: bird, speed: 0.05+rng()*0.1, radius: 15+rng()*25, angle: rng()*Math.PI*2});
+        villageGroup.add(bird);
+      }
+    }
+    
+    // ---------- PARTICLES (LEAVES/SNOW) ----------
+    function createParticles() {
+      particles.forEach(p=>villageGroup.remove(p));
+      particles.length=0;
+      const count = state.season===3 ? 400 : 120;
+      for(let i=0; i<count; i++) {
+        const geo = new THREE.SphereGeometry(state.season===3?0.1:0.2, 3);
+        const mat = new THREE.MeshStandardMaterial({color: state.season===3?0xffffff:0xd8a54a, emissive:0x302010, roughness:0.5});
+        const p = new THREE.Mesh(geo, mat);
+        p.position.set((Math.random()-0.5)*100, Math.random()*40, (Math.random()-0.5)*100);
+        p.userData = {vy: -0.02 - Math.random()*0.05, vx: (Math.random()-0.5)*0.03};
+        villageGroup.add(p);
+        particles.push(p);
+      }
+    }
+    
+    // ---------- LANTERNS & PROPS ----------
+    function addLanterns() {
+      platforms.forEach(pl => {
+        const pos = pl.group.position;
+        for(let i=0; i<2; i++) {
+          const lanternGeo = new THREE.SphereGeometry(0.25, 6);
+          const lanternMat = new THREE.MeshStandardMaterial({color:0xffaa33, emissive:0x442200});
+          const lantern = new THREE.Mesh(lanternGeo, lanternMat);
+          lantern.position.set(pos.x + (i===0?-1:1)*1.5, pos.y+2.5, pos.z);
+          lantern.castShadow = true;
+          villageGroup.add(lantern);
+          lanterns.push(lantern);
+        }
+      });
+    }
+    
+    // ---------- INITIAL GENERATE ----------
+    generateVillage(42);
+    addLanterns();
+    createParticles();
+    
+    // ---------- CONTROLS ----------
+    const orbitControls = new OrbitControls(camera, renderer.domElement);
+    orbitControls.enableDamping = true;
+    orbitControls.dampingFactor = 0.08;
+    orbitControls.minDistance = 2;
+    orbitControls.maxDistance = 90;
+    orbitControls.maxPolarAngle = Math.PI/2 + 0.1;
+    orbitControls.target.set(0, 15, 0);
+    
+    // Walk mode vars
+    const keys = {};
+    let walkCameraPos = new THREE.Vector3(0, 12, 0);
+    let yaw = 0, pitch = 0;
+    
+    function toggleMode() {
+      state.walkMode = !state.walkMode;
+      orbitControls.enabled = !state.walkMode;
+      if(state.walkMode) {
+        walkCameraPos.copy(camera.position);
+        const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+        yaw = Math.atan2(dir.x, dir.z);
+        pitch = Math.asin(dir.y);
+      }
+    }
+    
+    // UI Bindings
+    document.getElementById('time-slider').addEventListener('input', e=>{
+      state.timeOfDay = parseFloat(e.target.value);
+      document.getElementById('time-label').textContent = (state.timeOfDay<10?'0':'')+Math.floor(state.timeOfDay)+':00';
+    });
+    document.getElementById('season-slider').addEventListener('input', e=>{
+      state.season = parseInt(e.target.value);
+      const names=['Spring','Summer','Autumn','Winter'];
+      document.getElementById('season-label').textContent = names[state.season];
+      createParticles();
+    });
+    document.getElementById('fog-slider').addEventListener('input', e=>{
+      state.fogDensity = parseFloat(e.target.value);
+      scene.fog.density = state.fogDensity;
+      document.getElementById('fog-label').textContent = state.fogDensity.toFixed(3);
+    });
+    document.getElementById('wind-slider').addEventListener('input', e=>{
+      state.windStrength = parseFloat(e.target.value);
+      document.getElementById('wind-label').textContent = state.windStrength.toFixed(1);
+    });
+    document.getElementById('dwell-slider').addEventListener('input', e=>{
+      state.dwellCount = parseInt(e.target.value);
+      document.getElementById('dwell-label').textContent = state.dwellCount;
+      generateVillage(state.regenerate+1);
+      addLanterns(); createParticles();
+    });
+    document.getElementById('villager-slider').addEventListener('input', e=>{
+      state.villagerCount = parseInt(e.target.value);
+      document.getElementById('villager-label').textContent = state.villagerCount;
+      clearVillagers();
+      spawnVillagers();
+    });
+    document.getElementById('shadow-slider').addEventListener('input', e=>{
+      state.shadowQuality = parseInt(e.target.value);
+      const names=['Off','Low','High'];
+      document.getElementById('shadow-label').textContent = names[state.shadowQuality];
+      sunLight.castShadow = state.shadowQuality > 0;
+      if(state.shadowQuality===0) renderer.shadowMap.enabled=false; else renderer.shadowMap.enabled=true;
+      sunLight.shadow.mapSize.width = state.shadowQuality===2?2048:512;
+      sunLight.shadow.mapSize.height = state.shadowQuality===2?2048:512;
+    });
+    document.getElementById('regenerate-btn').addEventListener('click', ()=>{
+      state.regenerate = Math.floor(Math.random()*1000);
+      generateVillage(state.regenerate);
+      addLanterns(); createParticles();
+    });
+    document.getElementById('reset-view-btn').addEventListener('click', ()=>{
+      camera.position.set(35,25,60);
+      orbitControls.target.set(0,15,0);
+      orbitControls.update();
+    });
+    document.getElementById('toggle-mode-btn').addEventListener('click', toggleMode);
+    document.getElementById('help-btn').addEventListener('click', ()=>{
+      document.getElementById('help-overlay').classList.toggle('hidden');
+    });
+    document.getElementById('close-help').addEventListener('click', ()=>{
+      document.getElementById('help-overlay').classList.add('hidden');
+    });
+    document.getElementById('panel-toggle').addEventListener('click', ()=>{
+      document.getElementById('controls-panel').classList.toggle('collapsed');
+    });
+    window.addEventListener('keydown', (e)=>{
+      if(e.key==='f'||e.key==='F') toggleMode();
+      if(e.key==='r'||e.key==='R') { camera.position.set(35,25,60); orbitControls.target.set(0,15,0); }
+      if(e.key==='h'||e.key==='H') document.getElementById('help-overlay').classList.toggle('hidden');
+      keys[e.key.toLowerCase()] = true;
+    });
+    window.addEventListener('keyup', (e)=>{ keys[e.key.toLowerCase()] = false; });
+    
+    function clearVillagers() {
+      villagers.forEach(v=>villageGroup.remove(v.group));
+      villagers.length=0;
+    }
+    
+    // ---------- ANIMATION LOOP ----------
+    let lastTime = performance.now();
+    let fpsFrames = 0, fpsTime = 0;
+    
+    function animate() {
+      requestAnimationFrame(animate);
+      const now = performance.now();
+      const dt = Math.min(0.05, (now-lastTime)/1000);
+      lastTime = now;
+      
+      // Time of day
+      const t = state.timeOfDay/24;
+      const sunAngle = (t-0.25) * Math.PI * 2;
+      const sunHeight = Math.sin(sunAngle);
+      const sunAzimuth = Math.cos(sunAngle);
+      sunLight.position.set(sunAzimuth*80, sunHeight*60+20, 30);
+      sunLight.target.position.set(0,10,0);
+      sunLight.intensity = 1.5 + Math.max(0, sunHeight)*2.5;
+      sunLight.color.setHSL(0.08, 0.8, 0.7 + sunHeight*0.2);
+      const ambIntensity = 0.4 + Math.max(0, sunHeight)*0.5;
+      ambientLight.intensity = ambIntensity;
+      scene.background.setHSL(0.6, 0.5, 0.5 + sunHeight*0.3);
+      scene.fog.color.setHSL(0.6, 0.4, 0.6 + sunHeight*0.3);
+      
+      // Lanterns glow at night
+      const nightFactor = Math.max(0, 1 - Math.abs(sunHeight));
+      lanterns.forEach(l=>{
+        l.material.emissiveIntensity = nightFactor*1.5;
+        l.material.emissive.setRGB(1,0.7,0.2);
+      });
+      
+      // Wind sway
+      const wind = state.windStrength;
+      trees.forEach((tree, i)=>{
+        tree.group.rotation.z = Math.sin(now*0.001 + i)*0.01*wind;
+        tree.group.rotation.x = Math.cos(now*0.002 + i)*0.01*wind;
+      });
+      bridges.forEach(b=>{
+        b.group.rotation.y = Math.sin(now*0.003)*0.02*wind;
+      });
+      
+      // Smoke
+      buildings.forEach(b=>{
+        b.smoke.forEach(s=>{
+          s.position.y += (0.4 + wind*0.3) * dt;
+          s.position.x += Math.sin(now*0.001 + s.userData.offset)*0.02*wind;
+          if(s.position.y > s.userData.baseY + 3) s.position.y = s.userData.baseY;
+          const scale = 0.5 + (s.position.y - s.userData.baseY)*0.2;
+          s.scale.set(scale,scale,scale);
+          s.material.opacity = Math.max(0, 0.6 - (s.position.y - s.userData.baseY)*0.15);
+        });
+      });
+      
+      // Villagers walking
+      villagers.forEach(v=>{
+        v.group.userData.t = (v.group.userData.t || 0) + v.speed*dt;
+        const t = v.group.userData.t + v.offset;
+        const path = Math.sin(t)*15;
+        v.group.position.x = path;
+        v.group.position.z = Math.cos(t*0.7)*12;
+        v.group.position.y = 11 + Math.sin(t*1.3)*2;
+        v.group.rotation.y = Math.cos(t)*0.2;
+      });
+      
+      // Birds
+      birds.forEach(b=>{
+        b.angle += b.speed*dt;
+        const r = b.radius;
+        b.group.position.x = Math.cos(b.angle)*r;
+        b.group.position.z = Math.sin(b.angle)*r;
+        b.group.position.y = 20 + Math.sin(b.angle*3)*8;
+        b.group.rotation.y = -b.angle;
+      });
+      
+      // Particles
+      particles.forEach(p=>{
+        p.position.y += p.userData.vy * (state.season===3?0.5:1) * dt*20;
+        p.position.x += p.userData.vx * dt*20;
+        if(p.position.y < 0.1) { p.position.y = 35; p.position.x = (Math.random()-0.5)*80; p.position.z = (Math.random()-0.5)*80; }
+      });
+      
+      // Camera controls
+      if(state.walkMode) {
+        const speed = 12*dt;
+        const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
+        const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+        if(keys['w']) walkCameraPos.add(forward.clone().multiplyScalar(speed));
+        if(keys['s']) walkCameraPos.add(forward.clone().multiplyScalar(-speed));
+        if(keys['a']) walkCameraPos.add(right.clone().multiplyScalar(-speed));
+        if(keys['d']) walkCameraPos.add(right.clone().multiplyScalar(speed));
+        walkCameraPos.y += (keys['q']?1:0)*speed*0.5 - (keys['e']?1:0)*speed*0.5;
+        // constrain above ground
+        if(walkCameraPos.y < 1) walkCameraPos.y = 1;
+        camera.position.copy(walkCameraPos);
+        camera.lookAt(walkCameraPos.x - Math.sin(yaw), walkCameraPos.y + pitch, walkCameraPos.z - Math.cos(yaw));
+      } else {
+        orbitControls.update();
+      }
+      
+      // FPS
+      fpsFrames++;
+      if(now - fpsTime >= 1000) {
+        document.getElementById('fps-value').textContent = fpsFrames;
+        fpsFrames = 0; fpsTime = now;
+      }
+      
+      renderer.render(scene, camera);
+    }
+    
+    animate();
+    
+    window.addEventListener('resize', ()=>{
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    
+    console.log('🌿 Treetop Village ready!');
+  </script>
+</body>
+</html>

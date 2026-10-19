@@ -62,6 +62,42 @@
       "effort": "high",
       "date": "2026-10-18",
       "note": "As generated, no edits."
+    },
+    {
+      "file": "Treetop_village_DeepSeek_V4_Pro_0813_Xhigh.html",
+      "label": "DeepSeek V4 Pro 0813 Xhigh",
+      "model": "cloud-deepseek-v4-pro-0813",
+      "provider": "litellm (http://localhost:4000)",
+      "effort": "xhigh",
+      "date": "2026-10-19",
+      "note": "As generated, no edits."
+    },
+    {
+      "file": "Treetop_village_Muse_Spark_Open_High.html",
+      "label": "Muse Spark Open High",
+      "model": "cloud-muse-spark-open",
+      "provider": "litellm (http://localhost:4000)",
+      "effort": "high",
+      "date": "2026-10-19",
+      "note": "As generated, no edits."
+    },
+    {
+      "file": "Treetop_village_Gemini_4_Argon_High.html",
+      "label": "Gemini 4 Argon High",
+      "model": "cloud-gemini-4-argon",
+      "provider": "litellm (http://localhost:4000)",
+      "effort": "high",
+      "date": "2026-10-19",
+      "note": "As generated, no edits."
+    },
+    {
+      "file": "Treetop_village_GLM_5.3_FlashX_High.html",
+      "label": "GLM 5.3 FlashX High",
+      "model": "cloud-glm",
+      "provider": "litellm (http://localhost:4000)",
+      "effort": "high",
+      "date": "2026-10-19",
+      "note": "As generated, no edits."
     }
   ]
 }
