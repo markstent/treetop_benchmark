@@ -98,6 +98,24 @@
       "effort": "high",
       "date": "2026-10-19",
       "note": "As generated, no edits."
+    },
+    {
+      "file": "Treetop_village_GPT6.1_Terra_Max.html",
+      "label": "GPT6.1 Terra Max",
+      "model": "cloud-gpt-6.1-terra",
+      "provider": "litellm (http://127.0.0.1:4000)",
+      "effort": "max",
+      "date": "2026-10-28",
+      "note": "As generated, no edits."
+    },
+    {
+      "file": "Treetop_village_DeepSeek_V4.1_Flash_Max.html",
+      "label": "DeepSeek V4.1 Flash Max",
+      "model": "cloud-deepseek-v4.1-flash",
+      "provider": "litellm (http://127.0.0.1:4000)",
+      "effort": "max",
+      "date": "2026-10-28",
+      "note": "As generated, no edits."
     }
   ]
 }
