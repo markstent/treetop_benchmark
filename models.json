@@ -125,6 +125,24 @@
       "effort": "max",
       "date": "2026-10-28",
       "note": "As generated, no edits."
+    },
+    {
+      "file": "Treetop_village_Flint_Local.html",
+      "label": "Flint Local",
+      "model": "local-flint",
+      "provider": "litellm (http://127.0.0.1:4000)",
+      "effort": "default",
+      "date": "2026-10-28",
+      "note": "Generated without a reasoning effort setting: the model emits no reasoning tokens and the effort knob is ignored. File renamed from the generated name to drop the effort suffix."
+    },
+    {
+      "file": "Treetop_village_Qwen_3.5_35B_Local.html",
+      "label": "Qwen 3.5 35B Local",
+      "model": "local-qwen",
+      "provider": "litellm (http://127.0.0.1:4000)",
+      "effort": "default",
+      "date": "2026-10-28",
+      "note": "Generated without a reasoning effort setting: the model thinks natively (about 1,000 reasoning tokens) and does not take an effort knob. File renamed from the generated name to drop the effort suffix."
     }
   ]
 }
