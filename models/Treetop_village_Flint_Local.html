@@ -131,7 +131,7 @@ function leafFallTex(){ return canvasTex(64,(ctx,s)=>{ ctx.fillStyle='#d94f3d'; 
 function snowTex(){ return canvasTex(64,(ctx,s)=>{ ctx.fillStyle='#fff'; ctx.fillRect(0,0,s,s); }); }
 
 // ============ SCENE SETUP ============
-const renderer=new THREE.WebGLRenderer({antialias:true});
+const renderer=new THREE.WebGLRenderer({antialias:true, canvas:document.getElementById('app')});
 renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
