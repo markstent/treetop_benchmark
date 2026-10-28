@@ -125,24 +125,6 @@
       "effort": "max",
       "date": "2026-10-28",
       "note": "As generated, no edits."
-    },
-    {
-      "file": "Treetop_village_Flint_Local.html",
-      "label": "Flint Local",
-      "model": "local-flint",
-      "provider": "litellm (http://127.0.0.1:4000)",
-      "effort": "default",
-      "date": "2026-10-28",
-      "note": "Run locally through Ollama on an Apple M4 Max with 128 GB memory (Flint 39.8B, int4 quantisation). Patched after generation; the model emits no reasoning tokens, so no effort setting applies. Repairs: one missing closing parenthesis that aborted the whole script; 27 constructor calls that passed materials as geometry parameters, producing NaN geometry; a helper call with a segment count in the material slot; a dwellings loop reading properties createDwelling does not return; a water shader using a time uniform it never declared; and a renderer that was never attached to the canvas element the page declares, so the finished scene existed only in an orphaned buffer. As generated, the page showed nothing at all."
-    },
-    {
-      "file": "Treetop_village_Qwen_3.5_35B_Local.html",
-      "label": "Qwen 3.5 35B Local",
-      "model": "local-qwen",
-      "provider": "litellm (http://127.0.0.1:4000)",
-      "effort": "default",
-      "date": "2026-10-28",
-      "note": "Run locally through Ollama on an Apple M4 Max with 128 GB memory (Qwen 3.5 35B, Q4_K_M quantisation). Patched after generation; the model thinks natively (about 1,000 reasoning tokens) and takes no effort setting. Repairs: two unused imports of unmapped or nonexistent addon modules; undefined variables and light-name typos; a missing dot in lightAmpel.intensity; fog used before creation; a dead call to a hallucinated curve.getUAt method; an uninitialised branches array; vertex colours passed as a raw array instead of a BufferAttribute; a missing geometry guard in a scene.traverse callback; the DOM canvas pushed into scene.children; canopy basePos and idHash never set; no initial camera position or orbit target, which left the camera inside a tree; and a duplicated loader element that stayed on top of the page forever. As generated, the page showed nothing at all."
     }
   ]
 }

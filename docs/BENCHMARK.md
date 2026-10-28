@@ -30,8 +30,6 @@ A model that nails the trees but skips the villagers has not finished.
 
 Every run is given the same completion token budget, and thinking counts against it. A reply that exhausts the budget, or arrives without a complete document, is refused and never shown.
 
-Most runs are served by hosted providers. Some models are run locally on consumer hardware, with quantised weights served by Ollama, so a local result reflects the machine as well as the model. The provenance note on each run records which kind it was and, for local runs, the hardware.
-
 ## What it covers
 
 A strong result demands several distinct abilities at once.
