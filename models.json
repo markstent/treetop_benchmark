@@ -116,6 +116,15 @@
       "effort": "max",
       "date": "2026-10-28",
       "note": "As generated, no edits."
+    },
+    {
+      "file": "Treetop_village_Kimi_K3.1_Pro_Max.html",
+      "label": "Kimi K3.1 Pro Max",
+      "model": "cloud-kimi-k3.1-pro",
+      "provider": "litellm (http://127.0.0.1:4000)",
+      "effort": "max",
+      "date": "2026-10-28",
+      "note": "As generated, no edits."
     }
   ]
 }
