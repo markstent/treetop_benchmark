@@ -28,6 +28,8 @@ And it sets a quality bar: cohesive storybook art direction, considered lighting
 Nothing in the brief is optional.
 A model that nails the trees but skips the villagers has not finished.
 
+Every run is given the same completion token budget, and thinking counts against it. A reply that exhausts the budget, or arrives without a complete document, is refused and never shown.
+
 ## What it covers
 
 A strong result demands several distinct abilities at once.
